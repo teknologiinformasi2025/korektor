@@ -1,4 +1,6 @@
 // netlify/functions/auto-correct.js
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // -----------------------------------------------------------------------------
 // Fungsi: menerima jawaban peserta → minta GPT menilai → simpan ke Neon DB.
 // CORS + per‑request PG‑client (tidak reuse) untuk mencegah error "Client already connected".
