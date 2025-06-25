@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: #0d2e75;
+        font-family: "Poppins", sans-serif;
+        color: white;
+        user-select: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+      }
+      .leaderboard {
+        width: 900px;
+        background: linear-gradient(135deg, #0a2a67 0%, #134baa 80%);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        border-radius: 8px;
+        padding: 30px 50px 40px;
+        position: relative;
+        overflow: hidden;
+      }
+      .leaderboard::before {
+        content: "";
+        position: absolute;
+        top: -60%;
+        left: -40%;
+        width: 250%;
+        height: 200%;
+        background: repeating-conic-gradient(
+          from 45deg,
+          #0d366f 0 22deg,
+          #134ba9 22deg 45deg
+        );
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 0;
+        border-radius: 10px;
+      }
+      .title {
+        font-weight: 700;
+        font-size: 48px;
+        text-align: center;
+        letter-spacing: 4px;
+        margin-bottom: 18px;
+        text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+      }
+      .title .medal {
+        width: 38px;
+        height: 38px;
+        background: radial-gradient(
+          circle at center,
+          #ffd700 40%,
+          #c69500 62%,
+          #9a6c00 90%
+        );
+        border-radius: 50%;
+        box-shadow: 0 0 8px #ffdb4d inset;
+        position: relative;
+        display: inline-block;
+      }
+      .title .medal::after {
+        content: "";
+        position: absolute;
+        top: 9px;
+        left: 50%;
+        width: 6px;
+        height: 20px;
+        background: #c69500;
+        border-radius: 2px;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 2px #6c4b00;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 16px;
+        position: relative;
+        z-index: 2;
+      }
+      thead th {
+        font-weight: 700;
+        font-size: 16px;
+        padding-bottom: 12px;
+        border-bottom: 3px solid #082253;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        text-align: center;
+        color: #a3b3d4;
+        user-select: none;
+      }
+      tbody tr {
+        background: linear-gradient(90deg, #134ba9, #1864db);
+        box-shadow: 5px 5px 15px rgba(10, 35, 85, 0.3);
+        border-radius: 6px;
+        transition: background 0.3s ease;
+        cursor: default;
+      }
+      tbody tr:hover {
+        background: linear-gradient(90deg, #1f72db, #5fa0ff);
+        box-shadow: 8px 8px 32px rgba(31, 114, 219, 0.5);
+      }
+      tbody td {
+        font-weight: 600;
+        font-size: 18px;
+        color: white;
+        padding: 16px 0;
+        text-align: center;
+        position: relative;
+        user-select: none;
+        letter-spacing: 1.2px;
+      }
+      tbody td:first-child {
+        font-size: 20px;
+        font-weight: 800;
+        padding-left: 20px;
+        text-align: left;
+        letter-spacing: 1.6px;
+        width: 6%;
+      }
+      tbody td:nth-child(2) {
+        text-align: left;
+        width: 40%;
+        padding-left: 12px;
+      }
+      tbody td:not(:first-child):not(:nth-child(2)) {
+        width: 18%;
+      }
+      tbody tr td:first-child::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 25%;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 18px 14px 18px 0;
+        border-color: transparent #0c2a63 transparent transparent;
+        z-index: 1;
+        transition: border-color 0.3s ease;
+        border-radius: 0 4px 4px 0;
+      }
+      tbody tr:hover td:first-child::before {
+        border-color: transparent #1f72db transparent transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="leaderboard" role="region" aria-label="Leaderboard">
+      <div class="title" aria-level="1" role="heading">
+        <div class="medal" aria-hidden="true"></div>
+        LEADERBOARD
+        <div class="medal" aria-hidden="true"></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ranking</th>
+            <th>Nama</th>
+            <th>NPM</th>
+            <th>Skor</th>
+            <th>Submit</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+          <!-- Diisi via JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const api = "/.netlify/functions/leaderboard";
+      const tbody = document.getElementById("leaderboard-body");
+
+      fetch(api)
+        .then((res) => res.json())
+        .then((rows) => {
+          let prevScore = null;
+          let ranking = 0;
+          let index = 0;
+
+          rows.forEach((row) => {
+            index++;
+            if (prevScore !== row.total_skor) {
+              ranking = index;
+              prevScore = row.total_skor;
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${String(ranking).padStart(2, "0")}</td>
+              <td>${row.nama}</td>
+              <td>${row.npm}</td>
+              <td>${row.total_skor}</td>
+              <td>${new Date(row.submit_time).toLocaleString("id-ID")}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch((err) => {
+          tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Gagal memuat data: ${err.message}</td></tr>`;
+        });
+    </script>
+  </body>
+</html>

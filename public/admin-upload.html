@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin – Upload Jawaban JSON</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(135deg, #0a2a67, #134baa);
+        font-family: "Poppins", sans-serif;
+        color: #fff;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+      }
+
+      .upload-box {
+        background-color: #ffffff10;
+        backdrop-filter: blur(12px);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        max-width: 500px;
+        width: 100%;
+      }
+
+      .upload-box h1 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 1.5rem;
+        letter-spacing: 1px;
+        font-weight: 700;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        background: #ffffff10;
+        border: 1px solid #ffffff30;
+        border-radius: 8px;
+        color: #fff;
+        margin-bottom: 1rem;
+        cursor: pointer;
+      }
+
+      button {
+        width: 100%;
+        background-color: #ffd700;
+        color: #0a2a67;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #e6c200;
+      }
+
+      pre {
+        background: #0a2a67;
+        color: #ffffffcc;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 10px;
+        max-height: 300px;
+        overflow: auto;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="upload-box">
+      <h1>Upload File Jawaban (.json)</h1>
+      <input type="file" id="fileInput" accept="application/json" />
+      <button id="uploadBtn">Kirim ke Auto‑Correct</button>
+      <pre id="result">Menunggu file...</pre>
+    </div>
+
+    <script>
+      const endpoint =
+        "https://uap25.netlify.app/.netlify/functions/auto-correct";
+      const fileInput = document.getElementById("fileInput");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const result = document.getElementById("result");
+
+      uploadBtn.addEventListener("click", () => {
+        if (!fileInput.files[0]) {
+          alert("Pilih file JSON terlebih dahulu.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const payload = JSON.parse(reader.result);
+            uploadBtn.disabled = true;
+            result.textContent = "⏳ Mengirim...";
+
+            const res = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            const json = await res.json();
+            result.textContent = JSON.stringify(json, null, 2);
+          } catch (err) {
+            result.textContent = "❌ Error: " + err.message;
+          } finally {
+            uploadBtn.disabled = false;
+          }
+        };
+        reader.readAsText(fileInput.files[0]);
+      });
+    </script>
+  </body>
+</html>
