@@ -83,41 +83,61 @@
       <pre id="result">Menunggu file...</pre>
     </div>
 
-    <script>
-   const endpoint = "/.netlify/functions/auto-correct";
-      const fileInput = document.getElementById("fileInput");
-      const uploadBtn = document.getElementById("uploadBtn");
-      const result = document.getElementById("result");
+ <script>
+  const endpoint = "/.netlify/functions/auto-correct";
 
-      uploadBtn.addEventListener("click", () => {
-        if (!fileInput.files[0]) {
-          alert("Pilih file JSON terlebih dahulu.");
+  const fileInput = document.getElementById("fileInput");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const result = document.getElementById("result");
+
+  uploadBtn.addEventListener("click", () => {
+    if (!fileInput.files[0]) {
+      alert("Pilih file JSON terlebih dahulu.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const raw = JSON.parse(reader.result);
+        if (!Array.isArray(raw) || !raw[0]?.jawaban) {
+          result.textContent = "❌ Format file tidak dikenali.";
           return;
         }
 
-        const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const payload = JSON.parse(reader.result);
-            uploadBtn.disabled = true;
-            result.textContent = "⏳ Mengirim...";
-
-            const res = await fetch(endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-
-            const json = await res.json();
-            result.textContent = JSON.stringify(json, null, 2);
-          } catch (err) {
-            result.textContent = "❌ Error: " + err.message;
-          } finally {
-            uploadBtn.disabled = false;
-          }
+        const peserta = raw[0];
+        const payload = {
+          participant: {
+            nama: peserta.nama,
+            npm: peserta.npm
+          },
+          userAnswers: peserta.jawaban.map((item) => ({
+            id: "soal" + item.no,
+            jawaban: item.jawaban
+          }))
         };
-        reader.readAsText(fileInput.files[0]);
-      });
-    </script>
+
+        uploadBtn.disabled = true;
+        result.textContent = "⏳ Mengirim...";
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json();
+        result.textContent = JSON.stringify(json, null, 2);
+      } catch (err) {
+        result.textContent = "❌ Error: " + err.message;
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    };
+
+    reader.readAsText(fileInput.files[0]);
+  });
+</script>
+
   </body>
 </html>
