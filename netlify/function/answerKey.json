@@ -1,0 +1,127 @@
+[
+  {
+    "id": "soal1",
+    "pertanyaan": "Apa fungsi utama dari Figma?",
+    "jawaban_benar": "Desain UI/UX"
+  },
+  {
+    "id": "soal2",
+    "pertanyaan": "Figma termasuk dalam jenis aplikasi?",
+    "jawaban_benar": "Web-based"
+  },
+  {
+    "id": "soal3",
+    "pertanyaan": "Apa nama fitur kolaborasi real-time di Figma?",
+    "jawaban_benar": "Collaborative Editing"
+  },
+  {
+    "id": "soal4",
+    "pertanyaan": "Ekstensi file hasil export desain dari Figma ke gambar adalah?",
+    "jawaban_benar": ".png"
+  },
+  {
+    "id": "soal5",
+    "pertanyaan": "Fitur prototyping di Figma digunakan untuk?",
+    "jawaban_benar": "Simulasi interaksi halaman"
+  },
+  {
+    "id": "soal6",
+    "pertanyaan": "Apa kepanjangan dari LAN?",
+    "jawaban_benar": "Local Area Network"
+  },
+  {
+    "id": "soal7",
+    "pertanyaan": "Konektor standar kabel LAN tipe RJ-45 memiliki berapa pin?",
+    "jawaban_benar": "8"
+  },
+  {
+    "id": "soal8",
+    "pertanyaan": "Jenis kabel LAN yang paling umum digunakan saat ini adalah?",
+    "jawaban_benar": "UTP"
+  },
+  {
+    "id": "soal9",
+    "pertanyaan": "Perangkat yang menghubungkan beberapa komputer dalam jaringan LAN disebut?",
+    "jawaban_benar": "Switch"
+  },
+  {
+    "id": "soal10",
+    "pertanyaan": "Alamat IP dalam jaringan digunakan untuk?",
+    "jawaban_benar": "Identifikasi perangkat"
+  },
+  {
+    "id": "soal11",
+    "pertanyaan": "Tag HTML untuk membuat heading tingkat pertama adalah?",
+    "jawaban_benar": "<h1>"
+  },
+  {
+    "id": "soal12",
+    "pertanyaan": "Properti CSS untuk mengatur warna teks adalah?",
+    "jawaban_benar": "color"
+  },
+  {
+    "id": "soal13",
+    "pertanyaan": "Apa arti singkatan CSS?",
+    "jawaban_benar": "Cascading Style Sheets"
+  },
+  {
+    "id": "soal14",
+    "pertanyaan": "Perintah JavaScript untuk menampilkan pesan popup adalah?",
+    "jawaban_benar": "alert()"
+  },
+  {
+    "id": "soal15",
+    "pertanyaan": "Selector CSS yang memilih berdasarkan id menggunakan karakter apa?",
+    "jawaban_benar": "#"
+  },
+  {
+    "id": "soal16",
+    "pertanyaan": "Bagaimana cara menambahkan file JavaScript ke HTML?",
+    "jawaban_benar": "<script>"
+  },
+  {
+    "id": "soal17",
+    "pertanyaan": "Apa output dari `2 + \"2\"` di JavaScript?",
+    "jawaban_benar": "\"22\""
+  },
+  {
+    "id": "soal18",
+    "pertanyaan": "Website statis biasanya dibuat menggunakan?",
+    "jawaban_benar": "HTML, CSS, JS"
+  },
+  {
+    "id": "soal19",
+    "pertanyaan": "Keunggulan utama website statis adalah?",
+    "jawaban_benar": "Cepat dan ringan"
+  },
+  {
+    "id": "soal20",
+    "pertanyaan": "Website statis tidak dapat melakukan?",
+    "jawaban_benar": "Login dinamis"
+  },
+  {
+    "id": "soal21",
+    "pertanyaan": "Tools seperti Netlify atau GitHub Pages digunakan untuk?",
+    "jawaban_benar": "Hosting website statis"
+  },
+  {
+    "id": "soal22",
+    "pertanyaan": "WordPress ditulis menggunakan bahasa pemrograman?",
+    "jawaban_benar": "PHP"
+  },
+  {
+    "id": "soal23",
+    "pertanyaan": "XAMPP adalah paket yang menyediakan?",
+    "jawaban_benar": "Server lokal lengkap"
+  },
+  {
+    "id": "soal24",
+    "pertanyaan": "Untuk menjalankan WordPress secara lokal, kita butuh?",
+    "jawaban_benar": "XAMPP"
+  },
+  {
+    "id": "soal25",
+    "pertanyaan": "Dashboard WordPress digunakan untuk?",
+    "jawaban_benar": "Mengelola konten dan tampilan"
+  }
+]
