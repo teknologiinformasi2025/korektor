@@ -30,7 +30,7 @@ const client = new Client({
 
 // -----------------------------------------------------------------------------
 // Muat kunci jawaban sekali saja (di luar handler agar reuse antar-invoke)
-const answerKeyPath = path.resolve(__dirname, "answerKey.json");
+const answerKeyPath = path.resolve(__dirname, "answerkey.json");
 
 let answerKey = [];
 
