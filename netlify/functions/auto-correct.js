@@ -106,6 +106,7 @@ Alasan: <penjelasan singkat>
         skor = mScore ? parseFloat(mScore[1]) : 0;
 
         const mAlasan = txt.match(/Alasan:\s*([\s\S]*)/i);
+
         alasan = mAlasan ? mAlasan[1].trim() : alasan;
       } catch (gptErr) {
         alasan = `GPT error: ${gptErr.message}`;
