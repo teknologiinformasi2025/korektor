@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 import { Client } from "pg";
 import OpenAI from "openai";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
