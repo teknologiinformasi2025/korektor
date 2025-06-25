@@ -75,7 +75,7 @@ export async function handler(event) {
   try {
     await client.connect();
 
-    for (const { id, jawaban } of userAnswers) {
+    for (const { id, jawaban } of userAnswers.slice(0, 5)) {
       const kunci = answerKey.find((q) => q.id === id);
       if (!kunci) {
         results.push({ id, skor: 0, alasan: "Soal tidak ditemukan" });
