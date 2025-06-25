@@ -15,6 +15,14 @@ const client = new Client({
   ssl: { rejectUnauthorized: false }
 });
 
+await client.connect();
+try {
+  // ... lakukan query di sini
+} finally {
+  await client.end();
+}
+
+
 // CORS header (ganti origin jika ingin lebih ketat)
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
