@@ -2,7 +2,8 @@
   functions = "netlify/functions"
 
 [functions]
-  node_bundler = "esbuild"   # default, paling ringan
+  # Sertakan answerKey.json ke dalam bundle Lambda
+  included_files = ["netlify/functions/answerKey.json"]
 
 [dev]
   functions = "netlify/functions"
