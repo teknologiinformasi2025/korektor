@@ -1,16 +1,11 @@
 // netlify/functions/auto-correct.js
-// -----------------------------------------------------------------------------
-// Versi ringkas: proses 1 soal saja, fix ES‑module __dirname, loop valid, CORS OK.
-// -----------------------------------------------------------------------------
 import path from "path";
 import fs from "fs";
+import fetch from "node-fetch";
 import { fileURLToPath } from "url";
 import { Client } from "pg";
-import cohere from "cohere-ai";
 
-
-
-cohere.init(process.env.COHERE_API_KEY);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,10 +28,11 @@ export async function handler(event) {
     return { statusCode: 405, headers: corsHeaders, body: "Method Not Allowed" };
   }
 
-  // Parse payload -------------------------------------------------------------
   let payload;
   try { payload = JSON.parse(event.body || "{}"); }
-  catch { return { statusCode: 400, headers: corsHeaders, body: "JSON tidak valid" }; }
+  catch {
+    return { statusCode: 400, headers: corsHeaders, body: "JSON tidak valid" };
+  }
 
   const { participant, userAnswers } = payload;
   if (!participant?.nama || !participant?.npm || !Array.isArray(userAnswers) || !userAnswers.length) {
@@ -45,7 +41,6 @@ export async function handler(event) {
   if (!answerKey.length) {
     return { statusCode: 500, headers: corsHeaders, body: "answerKey.json tidak ditemukan" };
   }
-  // --------------------------------------------------------------------------
 
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -56,8 +51,7 @@ export async function handler(event) {
   try {
     await client.connect();
 
-    // === Kerjakan HANYA 1 soal (index 0) agar tidak timeout ===
-    const { id, jawaban } = userAnswers[0];
+    const { id, jawaban } = userAnswers[0]; // proses 1 soal saja
     const kunci = answerKey.find((q) => q.id === id);
     if (!kunci) {
       results.push({ id, skor: 0, alasan: "Soal tidak ditemukan" });
@@ -71,19 +65,27 @@ Nilai jawaban peserta dari 0 sampai 10. Jelaskan alasannya.`;
       let skor = 0;
       let alasan = "Tidak ada alasan.";
       try {
-        const completion = await cohere.generate({
-  model: "command",
-  prompt,
-  max_tokens: 150,
-  temperature: 0.3
-});
-        const txt = completion.body.generations?.[0]?.text || "";
+        const completion = await fetch("https://api.cohere.ai/generate", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.COHERE_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "command",
+            prompt,
+            max_tokens: 150,
+            temperature: 0.3
+          })
+        }).then(res => res.json());
+
+        const txt = completion.generations?.[0]?.text || "";
         const mScore  = txt.match(/Skor:\s*(\d+(?:\.\d+)?)/i);
         skor   = mScore ? parseFloat(mScore[1]) : 0;
         const mAlasan = txt.match(/Alasan:\s*([\s\S]*)/i);
         alasan = mAlasan ? mAlasan[1].trim() : alasan;
       } catch (e) {
-        alasan = `GPT error: ${e.message}`;
+        alasan = `Cohere error: ${e.message}`;
       }
 
       await client.query(
@@ -100,5 +102,9 @@ Nilai jawaban peserta dari 0 sampai 10. Jelaskan alasannya.`;
     await client.end();
   }
 
-  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ participant, results }) };
+  return {
+    statusCode: 200,
+    headers: corsHeaders,
+    body: JSON.stringify({ participant, results })
+  };
 }
