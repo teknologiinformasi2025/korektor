@@ -75,7 +75,8 @@ export async function handler(event) {
   try {
     await client.connect();
 
-    for (const { id, jawaban } of userAnswers.slice(0, 5)) {
+    const soalPertama = userAnswers[0];
+    const { id, jawaban } = soalPertama; {
       const kunci = answerKey.find((q) => q.id === id);
       if (!kunci) {
         results.push({ id, skor: 0, alasan: "Soal tidak ditemukan" });
@@ -108,6 +109,7 @@ export async function handler(event) {
       );
 
       results.push({ id, skor, alasan });
+    break;
     }
   } catch (err) {
     return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
