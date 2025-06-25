@@ -1,7 +1,7 @@
 // netlify/functions/auto-correct.js
 // -----------------------------------------------------------------------------
 // Fungsi: menerima jawaban peserta → minta GPT menilai → simpan ke Neon DB.
-// Sekarang dilengkapi CORS (OPTIONS + header) agar bisa dipanggil lintas‑domain.
+// CORS + per‑request PG‑client (tidak reuse) untuk mencegah error "Client already connected".
 // -----------------------------------------------------------------------------
 import { Client } from "pg";
 import OpenAI from "openai";
@@ -9,19 +9,6 @@ import fs from "fs";
 import path from "path";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-await client.connect();
-try {
-  // ... lakukan query di sini
-} finally {
-  await client.end();
-}
-
 
 // CORS header (ganti origin jika ingin lebih ketat)
 const corsHeaders = {
@@ -31,7 +18,7 @@ const corsHeaders = {
 };
 
 // -----------------------------------------------------------------------------
-// 🔑  Muat answerKey.json  (case‑insensitive)
+// 🔑  Muat answerKey.json (case‑insensitive) satu kali per cold‑start
 // -----------------------------------------------------------------------------
 const candidateFiles = [
   path.resolve(__dirname, "answerKey.json"),
@@ -61,7 +48,7 @@ export async function handler(event) {
     return { statusCode: 405, headers: corsHeaders, body: "Method Not Allowed" };
   }
 
-  // Validasi payload --------------------------------------------
+  // Validasi payload ----------------------------------------------------------
   let payload;
   try {
     payload = JSON.parse(event.body || "{}");
@@ -76,7 +63,13 @@ export async function handler(event) {
   if (!answerKey.length) {
     return { statusCode: 500, headers: corsHeaders, body: "Server error: answerKey.json tidak ditemukan." };
   }
-  //--------------------------------------------------------------
+  // --------------------------------------------------------------------------
+
+  // 🔌 Buat PG‑client per request (hindari reuse‑connected)
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
 
   const results = [];
   try {
@@ -116,11 +109,11 @@ export async function handler(event) {
 
       results.push({ id, skor, alasan });
     }
-
-    await client.end();
   } catch (err) {
-    await client?.end?.();
     return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
+  } finally {
+    // pastikan koneksi ditutup meski sukses atau gagal
+    await client.end();
   }
 
   return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ participant, results }) };
