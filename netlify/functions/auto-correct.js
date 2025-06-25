@@ -1,8 +1,7 @@
 // netlify/functions/auto-correct.js
 // -----------------------------------------------------------------------------
 // Fungsi: menerima jawaban peserta → minta GPT menilai → simpan ke Neon DB.
-// Perbaikan: loader kunci jawaban kini otomatis mencari "answerKey.json" 
-// atau "answerkey.json" (case‑insensitive) di direktori fungsi.
+// Sekarang dilengkapi CORS (OPTIONS + header) agar bisa dipanggil lintas‑domain.
 // -----------------------------------------------------------------------------
 import { Client } from "pg";
 import OpenAI from "openai";
@@ -16,19 +15,23 @@ const client = new Client({
   ssl: { rejectUnauthorized: false }
 });
 
+// CORS header (ganti origin jika ingin lebih ketat)
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS"
+};
+
 // -----------------------------------------------------------------------------
-// 🔑  Muat answerKey.json  (case‑insensitive, dua nama alternatif)
+// 🔑  Muat answerKey.json  (case‑insensitive)
 // -----------------------------------------------------------------------------
 const candidateFiles = [
   path.resolve(__dirname, "answerKey.json"),
   path.resolve(__dirname, "answerkey.json")
 ];
-
 let answerKey = [];
-let foundPath = "";
 for (const p of candidateFiles) {
   if (fs.existsSync(p)) {
-    foundPath = p;
     try {
       answerKey = JSON.parse(fs.readFileSync(p, "utf8"));
     } catch (e) {
@@ -37,15 +40,17 @@ for (const p of candidateFiles) {
     break;
   }
 }
-if (!foundPath) {
-  console.error("❌ Tidak menemukan answerKey.json / answerkey.json di", __dirname);
-}
 // -----------------------------------------------------------------------------
 
 export async function handler(event) {
+  // Pre‑flight CORS
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers: corsHeaders, body: "CORS preflight" };
+  }
+
   // Tolak selain POST
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+    return { statusCode: 405, headers: corsHeaders, body: "Method Not Allowed" };
   }
 
   // Validasi payload --------------------------------------------
@@ -53,20 +58,19 @@ export async function handler(event) {
   try {
     payload = JSON.parse(event.body || "{}");
   } catch {
-    return { statusCode: 400, body: "Bad Request: JSON tidak valid" };
+    return { statusCode: 400, headers: corsHeaders, body: "Bad Request: JSON tidak valid" };
   }
 
   const { participant, userAnswers } = payload;
   if (!participant?.nama || !participant?.npm || !Array.isArray(userAnswers) || !userAnswers.length) {
-    return { statusCode: 400, body: "Bad Request: payload tidak lengkap" };
+    return { statusCode: 400, headers: corsHeaders, body: "Bad Request: payload tidak lengkap" };
   }
   if (!answerKey.length) {
-    return { statusCode: 500, body: "Server error: answerKey.json tidak ditemukan." };
+    return { statusCode: 500, headers: corsHeaders, body: "Server error: answerKey.json tidak ditemukan." };
   }
   //--------------------------------------------------------------
 
   const results = [];
-
   try {
     await client.connect();
 
@@ -77,7 +81,6 @@ export async function handler(event) {
         continue;
       }
 
-      // Prompt untuk GPT
       const prompt = `Soal: ${kunci.pertanyaan}\nJawaban Benar: ${kunci.jawaban_benar}\nJawaban Peserta: ${jawaban}\n\nNilai jawaban peserta dari 0 sampai 10.\nFormat balasan:\nSkor: <angka>\nAlasan: <penjelasan singkat>`;
 
       let skor = 0;
@@ -109,8 +112,8 @@ export async function handler(event) {
     await client.end();
   } catch (err) {
     await client?.end?.();
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 
-  return { statusCode: 200, body: JSON.stringify({ participant, results }) };
+  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ participant, results }) };
 }
