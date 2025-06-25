@@ -5,12 +5,13 @@
   "engines": {
     "node": ">=18"
   },
+{
+  "type": "module",
   "dependencies": {
-    "pg": "^8.11.3",
-    "openai": "^4.30.0",
-    "node-fetch": "^3.3.2",
-    "dotenv": "^16.4.5"
-  },
+    "cohere-ai": "^6.11.2",
+    "pg": "^8.11.3"
+  }
+},
   "scripts": {
     "build": "echo 'Netlify will handle esbuild bundling'",
     "dev": "netlify dev"
