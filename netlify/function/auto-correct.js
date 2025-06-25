@@ -102,10 +102,10 @@ Alasan: <penjelasan singkat>
 
         const txt = completion.choices[0].message.content || "";
 
-        const mScore = txt.match(/Skor:\\s*(\\d+(?:\\.\\d+)?)/i);
+        const mScore = txt.match(/Skor:\s*(\d+(?:\.\d+)?)/i);
         skor = mScore ? parseFloat(mScore[1]) : 0;
 
-        const mAlasan = txt.match(/Alasan:\\s*([\\s\\S]*)/i);
+        const mAlasan = txt.match(/Alasan:\s*([\s\S]*)/i);
         alasan = mAlasan ? mAlasan[1].trim() : alasan;
       } catch (gptErr) {
         alasan = `GPT error: ${gptErr.message}`;
